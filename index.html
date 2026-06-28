@@ -174,10 +174,12 @@
   <!-- 入力エリア ＆ 元の文字数カウンター -->
   <textarea id="postText" placeholder="ブログのタイトルや、Xの投稿文をここに打ち込んでね。下の画面が全自動で変形します！"></textarea>
   <div class="counter-txt">現在の文字数: <span id="charCount">0</span> 文字</div>
-
-  <!-- 元のGoogle検索用タイトルプレビュー -->
+  
+    <!-- 元のGoogle検索用タイトルプレビュー -->
   <div class="google-box">
-    <span class="google-dot">🔍</span> <span id="googlePreview">Google検索用のタイトル：文字を入力すると判定が始まります。</span>
+    <span class="google-dot">🔍</span> 
+    <strong>Google検索用のタイトル：</strong>
+    <span id="googlePreview" style="color: #cbd5e0;">文字を入力すると判定が始まります。</span>
   </div>
 
   <!-- 新規：切り替えトグル -->
@@ -235,11 +237,13 @@
     // 1. 元の神機能①：リアルタイム文字数カウント
     charCount.textContent = text.length;
 
-    // 2. 元の神機能②：Google検索用タイトル判定の連動
+    // 2. 元の神機能②：Google検索用タイトル判定の連動（見出しを残す仕様に修正）
     if (text) {
       googlePreview.textContent = text;
+      googlePreview.style.color = '#fff'; // 入力されたら文字を明るく
     } else {
-      googlePreview.textContent = 'Google検索用のタイトル：文字を入力すると判定が始まります。';
+      googlePreview.textContent = '文字を入力すると判定が始まります。';
+      googlePreview.style.color = '#cbd5e0'; // 未入力時はグレーに
     }
 
     // 3. X(Twitter)テキスト同期
