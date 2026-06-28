@@ -48,7 +48,7 @@
     textarea:focus { outline: none; border-color: #63b3ed; }
     .counter-txt { text-align: right; font-size: 1rem; font-weight: bold; color: #3182ce; margin-bottom: 15px; }
 
-    /* Google検索用タイトルプレビュー（元の機能を完全維持） */
+    /* Google検索用タイトルプレビュー（SEO仕様） */
     .google-box {
       background: #2d3748;
       border-radius: 12px;
@@ -60,6 +60,7 @@
       line-height: 1.4;
     }
     .google-dot { color: #4299e1; margin-right: 4px; }
+
     /* トグルスイッチ群 */
     .control-row { display: flex; gap: 10px; margin-bottom: 20px; }
     .toggle-btn {
@@ -103,7 +104,7 @@
     /* 📱 X(Twitter) ダークモード完全再現プレビュー */
     .preview-label { font-size: 0.8rem; color: #a0aec0; margin-bottom: 8px; text-align: left; }
     .x-post-box {
-      background: #000000; /* 本家Xの極黒 */
+      background: #000000;
       border: 1px solid #2f3336;
       border-radius: 16px;
       padding: 14px;
@@ -114,7 +115,7 @@
     .x-avatar {
       width: 40px;
       height: 40px;
-      background: #00ba7c; /* ココアさんイメージカラー */
+      background: #00ba7c;
       border-radius: 50%;
       flex-shrink: 0;
       display: flex;
@@ -139,7 +140,7 @@
       overflow: hidden;
       display: -webkit-box;
       -webkit-box-orient: vertical;
-      -webkit-line-clamp: 3; /* 基本は3行でカツッと切る */
+      -webkit-line-clamp: 3;
     }
     .font-serif { font-family: 'Georgia', 'Hiragino Mincho ProN', serif !important; }
     
@@ -157,7 +158,7 @@
     }
     .x-image-slot.show { display: flex; }
 
-    /* 追加パーツ（将来の広告枠、免責など） */
+    /* 追加パーツ */
     .ad-space { margin-top: 25px; background: #0d0f12; border: 1px dashed #4a5568; border-radius: 8px; padding: 15px; font-size: 0.75rem; color: #718096; text-align: center; }
     .ad-link { color: #3182ce; text-decoration: none; display: block; margin-top: 4px; font-weight: bold; }
     .footer-x { margin-top: 20px; font-size: 0.8rem; color: #a0aec0; text-align: center; }
@@ -171,25 +172,24 @@
   <h1>SNS＆タイトル画面シミュレーター</h1>
   <p class="bio">打った文字が実際の画面でどう見えるかリアルタイム測定</p>
 
- <!-- 入力エリア ＆ 元の文字数カウンター -->
+  <!-- 入力エリア -->
   <textarea id="postText" placeholder="ブログのタイトルや、Xの投稿文をここに打ち込んでね。下の画面が全自動で変形します！"></textarea>
   <div class="counter-txt">現在の文字数: <span id="charCount">0</span> 文字</div>
 
-  <!-- ★★★ ここに先ほどの「元のGoogle検索用タイトルプレビュー」を設置します ★★★ -->
+  <!-- 正しいHTML構造：JavaScriptを混入させない綺麗な箱 -->
   <div class="google-box">
     <span class="google-dot">🔍</span> 
     <strong>Google検索用のタイトル：</strong>
     <span id="googlePreview" style="font-weight: bold; color: #cbd5e0;">文字を入力すると判定が始まります。</span>
   </div>
 
-  <!-- 新規：切り替えトグル -->
+  <!-- 切り替えトグル -->
   <div class="control-row">
     <button id="toggleFont" class="toggle-btn active">ゴシック体</button>
     <button id="toggleImage" class="toggle-btn">画像なし</button>
   </div>
 
-
-  <!-- 📱 スマートフォン版 X(Twitter) での見た目 -->
+  <!-- Xプレビュー -->
   <div class="preview-label">📱 スマートフォン版 X(Twitter) での見た目</div>
   <div class="x-post-box">
     <div class="x-avatar">コ</div>
@@ -204,17 +204,17 @@
     </div>
   </div>
 
-  <!-- コピーボタン（元の文言を維持） -->
+  <!-- コピーボタン -->
   <button id="copyBtn" class="copy-btn">この文章をコピーしてXを開く 📋</button>
 
-  <!-- 将来の広告枠 ＆ フッター ＆ 免責 -->
+  <!-- フッター要素 -->
   <div class="ad-space">
     【将来の広告枠】<br>
     ここは将来的にスポンサー枠として活用予定のエリアです。
     <a href="https://x.com/cocoa_next7" target="_blank" class="ad-link">お問い合わせはこちら ↗</a>
   </div>
   <div class="footer-x">
-    開発者：<a href="https://x.com/cocoa_next7" target="_blank">ココア@cadオペからITで独立を目指す (@cocoa_next7) ↗</a>
+    開発者：<a href=https://x.com/cocoa_next7" target="_blank">ココア@cadオペからITで独立を目指す (@cocoa_next7) ↗</a>
   </div>
   <div class="disclaimer">
     【免責事項】本ツールは、X（旧Twitter）および各種検索エンジンの表示画面を簡易的にシミュレートするものであり、完全な表示を保証するものではありません。端末やアップデート等によるズレについて、当方は一切の責任を負いかねます。
@@ -231,40 +231,43 @@
   const toggleImage = document.getElementById('toggleImage');
   const copyBtn = document.getElementById('copyBtn');
 
-  // 全画面のリアルタイム連動・自動判定コアロジック
+  // 全プレビュー・カウンターを同期するメイン関数
   function updateAllPreviews() {
     const text = postText.value;
     
-    // 1. 元の神機能①：リアルタイム文字数カウント
+    // 1. 元の神機能：リアルタイム文字数カウント
     charCount.textContent = text.length;
 
-    // 2. 元の神機能②：Google検索用タイトル判定の連動（見出しを残す仕様に修正）
-    if (text) {
-      googlePreview.textContent = text;
-      googlePreview.style.color = '#fff'; // 入力されたら文字を明るく
-    } else {
+    // 2. SEO自動判定システム：文字そのものは移さず、基準文字数で合否を判定
+    if (text.length === 0) {
       googlePreview.textContent = '文字を入力すると判定が始まります。';
-      googlePreview.style.color = '#cbd5e0'; // 未入力時はグレーに
+      googlePreview.style.color = '#cbd5e0';
+    } else if (text.length >= 1 && text.length <= 32) {
+      // 32文字以内＝Google検索結果で見切れず綺麗に収まるため良好
+      googlePreview.textContent = `良好です（現在 ${text.length} 文字 / 32文字以内）`;
+      googlePreview.style.color = '#38a169'; // セーフティグリーン
+    } else {
+      // 33文字以上＝検索画面で「…」と省略されてしまうリスクが高いため長すぎ警告
+      googlePreview.textContent = `長すぎます（現在 ${text.length} 文字 / 32文字を超えています）`;
+      googlePreview.style.color = '#e53e3e'; // 警告のレッド
     }
 
-    // 3. X(Twitter)テキスト同期
+    // 3. X(Twitter)プレビューへの反映
     xText.textContent = text || 'ここに打ち込んだ投稿文がリアルタイムで映し出されます。';
 
-    // 4. 新機能：タイムライン上での「3行見切れ（…さらに表示）」の自動検知
-    // scrollHeight（実際のテキストの高さ）が clientHeight（3行分の表示上限）を超えたら判定ON
+    // 4. 新機能：タイムライン上での「3行見切れ（…さらに表示）」の全自動検知
     const isOverflowing = xText.scrollHeight > xText.clientHeight;
-    
     if (isOverflowing && text.length > 0) {
-      xMore.style.display = 'block'; // 3行を超えたので「…さらに表示」を出現させる
+      xMore.style.display = 'block'; // 3行の上限を超えたら出現
     } else {
       xMore.style.display = 'none';
     }
   }
 
-  // 入力時の全自動トリガー
+  // 入力イベントの紐付け
   postText.addEventListener('input', updateAllPreviews);
 
-  // 5. 新機能：フォント切り替えトグル（ゴシック体 ⇔ 明朝体）
+  // 5. 新機能：標準フォント切り替え（ゴシック ⇔ 明朝）
   toggleFont.addEventListener('click', () => {
     if (xText.classList.contains('font-serif')) {
       xText.classList.remove('font-serif');
@@ -273,11 +276,10 @@
       xText.classList.add('font-serif');
       toggleFont.textContent = '明朝体';
     }
-    // フォントによって文字幅や高さが変わり、見切れ位置が前後するため再計算
-    updateAllPreviews();
+    updateAllPreviews(); // フォント変更による折り返し位置の変化を再判定
   });
 
-  // 6. 新機能：画像あり/なしトグル
+  // 6. 新機能：画像あり/なし切り替えトグル
   toggleImage.addEventListener('click', () => {
     const hasImage = xImage.classList.contains('show');
     if (hasImage) {
@@ -289,36 +291,32 @@
       toggleImage.textContent = '画像あり (16:9)';
       toggleImage.classList.add('active');
     }
-    // 画像の有無でプレビュー領域全体のレイアウトバランスが変わるため、50ms後に再検知
+    // レイアウト変更が画面に描画されるのをわずかに待ってから3行見切れを再判定
     setTimeout(updateAllPreviews, 50);
   });
 
-  // 7. 過去作共通：1ミリも画面ジャンプさせないエラーフリーな「最速レモン緑コピー」
+  // 7. 過去作共通：ジャンプなし・エラーフリーの最速「レモン緑コピー」
   copyBtn.addEventListener('click', (e) => {
-    e.preventDefault(); // 予期せぬ画面のガタつきや最上部へのジャンプを完全撲滅
-    
+    e.preventDefault(); // 画面ガタつきを完全にガード
     const textToCopy = postText.value;
     if (!textToCopy) return;
 
-    // クリップボード最速書き込み
     navigator.clipboard.writeText(textToCopy).then(() => {
       const originalText = copyBtn.textContent;
-      
-      // ユーザーが確信を持てる「鮮やかなレモン緑」に変身
       copyBtn.textContent = 'コピー完了！📋';
-      copyBtn.classList.add('copied');
+      copyBtn.classList.add('copied'); // レモン緑に変身
 
-      // 2秒間しっかりキープしたあと、何事もなかったかのように元のUIデザインに戻す
+      // 2秒間カラーをキープした後に元のデザインへ自動復帰
       setTimeout(() => {
         copyBtn.textContent = originalText;
         copyBtn.classList.remove('copied');
       }, 2000);
     }).catch(err => {
-      console.error('コピー書き込みエラー:', err);
+      console.error('クリップボードコピー失敗:', err);
     });
   });
 
-  // 初回読み込み時のUI初期化
+  // 初回ロード時の初期化
   updateAllPreviews();
 </script>
 </body>
