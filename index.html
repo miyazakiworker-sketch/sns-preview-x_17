@@ -302,22 +302,30 @@
             setTimeout(updatePreview, 50);
         });
 
-        // 7. 過去作共通：画面フリーズ・ジャンプなしの「最速レモン緑コピー」
+               // 7. 過去作共通：ジャンプバグなし！最速コピーした後に自動でXの投稿画面を開く動線
         copyBtn.addEventListener('click', (e) => {
-            e.preventDefault(); // 画面のガタつきを完全にガード
+            e.preventDefault(); // 予期せぬページのガタつき（最上部への強制スクロール）のみをガード
+            
             const textToCopy = textInput.value;
             if (!textToCopy) return;
 
+            // クリップボードに最速書き込み
             navigator.clipboard.writeText(textToCopy).then(() => {
                 const originalText = copyBtn.textContent;
                 copyBtn.textContent = 'コピー完了！📋';
-                copyBtn.classList.add('copied'); // レモン緑に変身
+                copyBtn.classList.add('copied'); // 鮮やかなレモン緑に変身
 
-                // 2秒間カラーをキープした後に元のデザインへ自動復帰
+                // コピー完了をユーザーが確信した直後（0.3秒後）に、本家Xの投稿画面へ自動ジャンプ！
                 setTimeout(() => {
+                    // 入力したテキストを最初からURLに乗せてXを開くので、ペーストの手間すら省けます！
+                    const xUrl = `https://x.com{encodeURIComponent(textToCopy)}`;
+                    window.open(xUrl, '_blank');
+                    
+                    // ボタンの色を元の美しいココアさんデザインに戻す
                     copyBtn.textContent = originalText;
                     copyBtn.classList.remove('copied');
-                }, 2000);
+                }, 300);
+                
             }).catch(err => {
                 console.error('クリップボードコピー失敗:', err);
             });
