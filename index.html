@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SNS＆タイトル画面シミュレーター - COCOA TOOLS</title>
+  <style>
+    /* ココアさん標準：PC真ん中寄せ・スマホ完全フィット・極上の黒モード */
+    body {
+      background-color: #0d0f12;
+      font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif;
+      color: #e2e8f0;
+      margin: 0;
+      padding: 20px 15px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      box-sizing: border-box;
+    }
+    .container {
+      max-width: 480px;
+      width: 100%;
+      background: #1a1f26;
+      padding: 30px 20px;
+      border-radius: 20px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+      border: 1px solid #2d3748;
+      box-sizing: border-box;
+    }
+    h1 { font-size: 1.3rem; color: #fff; margin: 0 0 5px 0; text-align: center; }
+    .bio { font-size: 0.8rem; color: #a0aec0; margin: 0 0 20px 0; text-align: center; line-height: 1.4; }
+    
+    /* フォーム要素 */
+    label { display: block; font-size: 0.85rem; font-weight: bold; margin-bottom: 6px; color: #cbd5e0; }
+    textarea {
+      width: 100%;
+      height: 100px;
+      background: #0d0f12;
+      border: 1px solid #4a5568;
+      border-radius: 8px;
+      color: #fff;
+      padding: 12px;
+      box-sizing: border-box;
+      font-size: 0.95rem;
+      resize: none;
+      margin-bottom: 15px;
+    }
+    textarea:focus { border-color: #3182ce; outline: none; }
+    
+    /* トグルスイッチ群 */
+    .control-row { display: flex; gap: 10px; margin-bottom: 20px; }
+    .toggle-btn {
+      flex: 1;
+      background: #2d3748;
+      border: 1px solid #4a5568;
+      color: #a0aec0;
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: bold;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+    }
+    .toggle-btn.active {
+      background: #3182ce;
+      border-color: #3182ce;
+      color: #fff;
+    }
+    /* メインボタン（最速コピー） */
+    .copy-btn {
+      width: 100%;
+      background: #38a169;
+      color: white;
+      border: none;
+      padding: 14px;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-bottom: 25px;
+    }
+    .copy-btn.copied {
+      background: #a3e635 !important; /* レモン緑 */
+      color: #0d0f12 !important;
+    }
+
+    /* 📱 X(Twitter) ダークモード完全再現プレビュー */
+    .preview-label { font-size: 0.75rem; color: #718096; margin-bottom: 5px; text-align: left; }
+    .x-post-box {
+      background: #000000; /* 本家Xの極黒 */
+      border: 1px solid #2f3336;
+      border-radius: 12px;
+      padding: 12px;
+      text-align: left;
+      display: flex;
+      gap: 10px;
+    }
+    .x-avatar {
+      width: 40px;
+      height: 40px;
+      background: #555;
+      border-radius: 50%;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+    }
+    .x-body { flex: 1; min-width: 0; }
+    .x-user-info { display: flex; align-items: center; gap: 4px; margin-bottom: 2px; }
+    .x-name { font-weight: bold; font-size: 0.95rem; color: #e7e9ea; }
+    .x-handle { color: #71767b; font-size: 0.85rem; }
+    
+    /* 3行見切れの再現ロジック */
+    .x-text {
+      font-size: 0.95rem;
+      color: #e7e9ea;
+      line-height: 1.35;
+      white-space: pre-wrap;
+      word-break: break-all;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 3; /* 基本は3行でカツッと切る */
+    }
+    /* フォント切り替え用クラス */
+    .font-serif { font-family: 'Georgia', 'Hiragino Mincho ProN', serif !important; }
+    
+    .x-more-btn { display: none; color: #1d9bf0; font-size: 0.95rem; margin-top: 2px; cursor: pointer; }
+    .x-image-slot {
+      margin-top: 10px;
+      background: #2f3336;
+      border-radius: 16px;
+      aspect-ratio: 16 / 9;
+      display: none; /* 初期は非表示 */
+      align-items: center;
+      justify-content: center;
+      color: #71767b;
+      font-size: 0.85rem;
+      border: 1px solid #2f3336;
+    }
+    .x-image-slot.show { display: flex; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Xタイムラインシミュレーター</h1>
+  <p class="bio">3行見切れを秒速検証。ココア式レモン緑コピー搭載</p>
+
+  <!-- 入力エリア -->
+  <label for="postText">ポスト本文</label>
+  <textarea id="postText" placeholder="ここにテキストを入力すると下のプレビューに連動します..."></textarea>
+
+  <!-- 切り替えトグル -->
+  <div class="control-row">
+    <button id="toggleFont" class="toggle-btn active">ゴシック体</button>
+    <button id="toggleImage" class="toggle-btn">画像なし</button>
+  </div>
+
+  <!-- コピーボタン -->
+  <button id="copyBtn" class="copy-btn">クリップボードにコピー</button>
+
+  <!-- プレビュー領域 -->
+  <div class="preview-label">タイムライン上での見え方プレビュー</div>
+  <div class="x-post-box">
+    <div class="x-avatar">🐱</div>
+    <div class="x-body">
+      <div class="x-user-info">
+        <span class="x-name">ココア</span>
+        <span class="x-handle">@cocoa_next7 · 1分</span>
+      </div>
+      <div id="xText" class="x-text"></div>
+      <div id="xMore" class="x-more-btn">…さらに表示</div>
+      <div id="xImage" class="x-image-slot">🖼️ 画像プレビューエリア (16:9)</div>
+    </div>
+  </div>
+</div>
+<script>
+  const postText = document.getElementById('postText');
+  const xText = document.getElementById('xText');
+  const xMore = document.getElementById('xMore');
+  const xImage = document.getElementById('xImage');
+  const toggleFont = document.getElementById('toggleFont');
+  const toggleImage = document.getElementById('toggleImage');
+  const copyBtn = document.getElementById('copyBtn');
+
+  // 1. テキスト連動 ＆ 「…さらに表示」の自動検知ロジック
+  function updatePreview() {
+    const text = postText.value;
+    xText.textContent = text || 'ここにプレビューが表示されます';
+
+    // 画面に描画された実際の高さと、3行分の制限高さを比較して「見切れ」を判定
+    const isOverflowing = xText.scrollHeight > xText.clientHeight;
+    
+    if (isOverflowing && text.length > 0) {
+      xMore.style.display = 'block'; // 3行を超えたら「…さらに表示」を出現させる
+    } else {
+      xMore.style.display = 'none';
+    }
+  }
+
+  postText.addEventListener('input', updatePreview);
+
+  // 2. フォント切り替えトグル（ゴシック ⇔ 明朝）
+  toggleFont.addEventListener('click', () => {
+    if (xText.classList.contains('font-serif')) {
+      xText.classList.remove('font-serif');
+      toggleFont.textContent = 'ゴシック体';
+    } else {
+      xText.classList.add('font-serif');
+      toggleFont.textContent = '明朝体';
+    }
+  });
+
+  // 3. 画像あり/なしトグル
+  toggleImage.addEventListener('click', () => {
+    const hasImage = xImage.classList.contains('show');
+    if (hasImage) {
+      xImage.classList.remove('show');
+      toggleImage.textContent = '画像なし';
+      toggleImage.classList.remove('active');
+    } else {
+      xImage.classList.add('show');
+      toggleImage.textContent = '画像あり (16:9)';
+      toggleImage.classList.add('active');
+    }
+    // 画像の有無でテキストの折り返し行数が変わるため、再計算
+    setTimeout(updatePreview, 50);
+  });
+
+  // 4. 過去作共通：ジャンプなし・エラーフリーの「最速レモン緑コピー」
+  copyBtn.addEventListener('click', (e) => {
+    e.preventDefault(); // 画面ジャンプを完全に防ぐ
+    
+    const textToCopy = postText.value;
+    if (!textToCopy) return;
+
+    // クリップボード最速書き込み
+    navigator.clipboard.writeText(textToCopy).then(() => {
+      const originalText = copyBtn.textContent;
+      
+      // レモン緑に変身
+      copyBtn.textContent = 'コピー完了！';
+      copyBtn.classList.add('copied');
+
+      // 2秒後に何事もなかったかのように戻す
+      setTimeout(() => {
+        copyBtn.textContent = originalText;
+        copyBtn.classList.remove('copied');
+      }, 2000);
+    }).catch(err => {
+      console.error('コピー失敗:', err);
+    });
+  });
+
+  // 初期化実行
+  updatePreview();
+</script>
+</body>
+</html>
