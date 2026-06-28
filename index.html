@@ -68,6 +68,7 @@
       border-color: #3182ce;
       color: #fff;
     }
+
     /* メインボタン（最速コピー） */
     .copy-btn {
       width: 100%;
@@ -143,6 +144,46 @@
       border: 1px solid #2f3336;
     }
     .x-image-slot.show { display: flex; }
+
+    /* 追加パーツ用スタイル */
+    .ad-space {
+      margin-top: 25px;
+      background: #0d0f12;
+      border: 1px dashed #4a5568;
+      border-radius: 8px;
+      padding: 15px;
+      font-size: 0.75rem;
+      color: #718096;
+      text-align: center;
+    }
+    .ad-link {
+      color: #3182ce;
+      text-decoration: none;
+      display: block;
+      margin-top: 4px;
+      font-weight: bold;
+    }
+    .footer-x {
+      margin-top: 20px;
+      font-size: 0.8rem;
+      color: #a0aec0;
+      text-align: center;
+    }
+    .footer-x a {
+      color: #1d9bf0;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    .footer-x a:hover { text-decoration: underline; }
+    .disclaimer {
+      margin-top: 20px;
+      font-size: 0.65rem;
+      color: #4a5568;
+      line-height: 1.4;
+      text-align: left;
+      border-top: 1px solid #2d3748;
+      padding-top: 12px;
+    }
   </style>
 </head>
 <body>
@@ -178,7 +219,22 @@
       <div id="xImage" class="x-image-slot">🖼️ 画像プレビューエリア (16:9)</div>
     </div>
   </div>
-</div>
+
+    <!-- すべてをcontainerの「中」に綺麗に格納 -->
+  <div class="ad-space">
+    【将来の広告枠】<br>
+    ここは将来的にスポンサー枠として活用予定のエリアです。
+    <a href="https://x.com/cocoa_next7" target="_blank" class="ad-link">お問い合わせはこちら ↗</a>
+  </div>
+
+  <div class="footer-x">
+    開発者：<a href=https://x.com/cocoa_next7" target="_blank">ココア (@cocoa_next7) ↗</a>
+  </div>
+
+  <div class="disclaimer">
+    【免責事項】本ツールは、X（旧Twitter）の表示アルゴリズムおよび画面表示を簡易的にシミュレートするものであり、本家アプリでの完全な表示を保証するものではありません。端末やアップデート等によるズレについて、当方は一切の責任を負いかねます。
+  </div>
+
 <script>
   const postText = document.getElementById('postText');
   const xText = document.getElementById('xText');
@@ -188,16 +244,12 @@
   const toggleImage = document.getElementById('toggleImage');
   const copyBtn = document.getElementById('copyBtn');
 
-  // 1. テキスト連動 ＆ 「…さらに表示」の自動検知ロジック
   function updatePreview() {
     const text = postText.value;
     xText.textContent = text || 'ここにプレビューが表示されます';
-
-    // 画面に描画された実際の高さと、3行分の制限高さを比較して「見切れ」を判定
     const isOverflowing = xText.scrollHeight > xText.clientHeight;
-    
     if (isOverflowing && text.length > 0) {
-      xMore.style.display = 'block'; // 3行を超えたら「…さらに表示」を出現させる
+      xMore.style.display = 'block';
     } else {
       xMore.style.display = 'none';
     }
@@ -205,7 +257,6 @@
 
   postText.addEventListener('input', updatePreview);
 
-  // 2. フォント切り替えトグル（ゴシック ⇔ 明朝）
   toggleFont.addEventListener('click', () => {
     if (xText.classList.contains('font-serif')) {
       xText.classList.remove('font-serif');
@@ -216,7 +267,6 @@
     }
   });
 
-  // 3. 画像あり/なしトグル
   toggleImage.addEventListener('click', () => {
     const hasImage = xImage.classList.contains('show');
     if (hasImage) {
@@ -228,26 +278,18 @@
       toggleImage.textContent = '画像あり (16:9)';
       toggleImage.classList.add('active');
     }
-    // 画像の有無でテキストの折り返し行数が変わるため、再計算
     setTimeout(updatePreview, 50);
   });
 
-  // 4. 過去作共通：ジャンプなし・エラーフリーの「最速レモン緑コピー」
   copyBtn.addEventListener('click', (e) => {
-    e.preventDefault(); // 画面ジャンプを完全に防ぐ
-    
+    e.preventDefault();
     const textToCopy = postText.value;
     if (!textToCopy) return;
 
-    // クリップボード最速書き込み
     navigator.clipboard.writeText(textToCopy).then(() => {
       const originalText = copyBtn.textContent;
-      
-      // レモン緑に変身
       copyBtn.textContent = 'コピー完了！';
       copyBtn.classList.add('copied');
-
-      // 2秒後に何事もなかったかのように戻す
       setTimeout(() => {
         copyBtn.textContent = originalText;
         copyBtn.classList.remove('copied');
@@ -257,68 +299,7 @@
     });
   });
 
-  // 初期化実行
   updatePreview();
 </script>
-    <!-- 1. 将来の広告枠（極上の黒モードに溶け込むプレースホルダー） -->
-  <style>
-    .ad-space {
-      margin-top: 25px;
-      background: #0d0f12;
-      border: 1px dashed #4a5568;
-      border-radius: 8px;
-      padding: 15px;
-      font-size: 0.75rem;
-      color: #718096;
-      text-align: center;
-    }
-    .ad-link {
-      color: #3182ce;
-      text-decoration: none;
-      display: block;
-      margin-top: 4px;
-      font-weight: bold;
-    }
-    
-    /* 2. 免責事項（極小フォントでノイズにしない） */
-    .disclaimer {
-      margin-top: 20px;
-      font-size: 0.65rem;
-      color: #4a5568;
-      line-height: 1.4;
-      text-align: left;
-      border-top: 1px solid #2d3748;
-      padding-top: 12px;
-    }
-    
-    /* 3. 開発者Xリンク */
-    .footer-x {
-      margin-top: 20px;
-      font-size: 0.8rem;
-      color: #a0aec0;
-    }
-    .footer-x a {
-      color: #1d9bf0; /* Xブランドカラー */
-      text-decoration: none;
-      font-weight: bold;
-    }
-    .footer-x a:hover { text-decoration: underline; }
-  </style>
-
-  <!-- 表示領域 -->
-  <div class="ad-space">
-    【スポンサー募集枠】<br>
-    作業効率化に興味がある層へダイレクトにリーチ可能です。
-    <a href="https://x.com" target="_blank" class="ad-link">お仕事のご相談はこちら ↗</a>
-  </div>
-
-  <div class="footer-x">
-    開発者：<a href="https://x.com/cocoa_next7" target="_blank">ココア (@cocoa_next7) ↗</a>
-  </div>
-
-  <div class="disclaimer">
-    【免責事項】本ツールは、X（旧Twitter）の表示アルゴリズムおよび画面表示を簡易的にシミュレートするものであり、本家アプリでの完全な表示を保証するものではありません。端末やアップデート等によるズレについて、当方は一切の責任を負いかねます。
-  </div>
-
 </body>
 </html>
